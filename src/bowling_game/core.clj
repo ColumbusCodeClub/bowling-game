@@ -1,10 +1,23 @@
 (ns bowling-game.core)
 
-(defn- to-frames [rolls]
-  (lazy-seq (cons (take 2 rolls) (to-frames (drop 2 rolls)))))
+(defn spare? [rolls]
+  (= (+ (first rolls) (second rolls)) 10))
 
-(defn- frame-score [rolls]
-  (reduce + rolls))
+(defn strike? [rolls]
+  (= (first rolls) 10))
+
+(defn- rolls-per-frame [rolls]
+  (if (or (strike? rolls) (spare? rolls)) 3 2))
+
+(defn- rolls-to-advance-per-frame [rolls]
+  (if (strike? rolls) 1 2))
+
+(defn to-frames [rolls]
+  (lazy-seq (cons (take (rolls-per-frame rolls) rolls)
+                  (to-frames (drop (rolls-to-advance-per-frame rolls) rolls)))))
+
+(defn- frame-score [frame-rolls]
+  (reduce + frame-rolls))
 
 (defn score-game [rolls]
   (reduce + (map frame-score (take 10 (to-frames rolls)))))
